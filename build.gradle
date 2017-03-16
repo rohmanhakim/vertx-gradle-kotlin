@@ -1,0 +1,45 @@
+plugins {
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+    id 'org.jetbrains.kotlin.jvm' version '1.1.1'
+}
+
+version = '1.0-SNAPSHOT'
+sourceCompatibility = 1.8
+mainClassName = 'io.vertx.core.Launcher'
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+def vertxVersion = '3.4.1'
+def mainVerticleName = 'com.rohmanhakim.vertxgradle.SampleVerticle'
+def watchForChange = 'src/**/*'
+def doOnChange = './gradlew classes'
+
+dependencies {
+    compile "io.vertx:vertx-core:$vertxVersion"
+    testCompile "junit:junit:4.12"
+    testCompile "io.vertx:vertx-unit:$vertxVersion"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:1.1.1"
+}
+
+shadowJar {
+    classifier = 'fat'
+    manifest {
+        attributes "Main-Verticle": mainVerticleName
+    }
+    mergeServiceFiles {
+        include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+    }
+}
+
+
+run {
+    args = ['run', mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$mainClassName", "--on-redeploy=$doOnChange"]
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.1'
+}
